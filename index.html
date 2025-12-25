@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#070b18" />
+
+  <title>Tic Tac Toe</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <style>
+    :root{
+      --bg1:#070b18;
+      --bg2:#0b1228;
+      --bg3:#111a3a;
+
+      --panel:#111a2e;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --x:#60a5fa;
+      --o:#fb7185;
+      --btn:#0f1a33;
+      --btnHover:#1a2a55;
+      --win:#22c55e;
+      --draw:#f59e0b;
+
+      --radius: 20px;
+      --shadow: 0 25px 60px rgba(0,0,0,.55);
+      --glowX: 0 0 40px rgba(96,165,250,.18);
+      --glowO: 0 0 40px rgba(251,113,133,.18);
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      min-height:100svh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+
+      /* 🌌 Aesthetic Background */
+      background:
+        radial-gradient(900px 600px at 20% 10%, rgba(96,165,250,.25), transparent 60%),
+        radial-gradient(800px 500px at 85% 20%, rgba(251,113,133,.22), transparent 60%),
+        radial-gradient(700px 600px at 50% 90%, rgba(34,197,94,.15), transparent 65%),
+        linear-gradient(180deg, var(--bg1), var(--bg2) 50%, var(--bg3));
+      color: var(--text);
+    }
+
+    .app{
+      width: min(520px, 100%);
+      background: rgba(17,26,46,.55);
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      overflow:hidden;
+    }
+
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:18px 18px 12px;
+    }
+
+    h1{
+      margin:0;
+      font-size:22px;
+      letter-spacing:.5px;
+    }
+
+    .badge{
+      padding:8px 12px;
+      background: rgba(17,26,46,.9);
+      border-radius:999px;
+      font-weight:700;
+      font-size:12px;
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    /* Scoreboard */
+    .scores{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:12px;
+      padding:0 18px 14px;
+    }
+
+    .score{
+      background: rgba(15,26,51,.7);
+      border-radius:14px;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      font-weight:800;
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .score small{ color:var(--muted); }
+    .score .val{ font-size:16px; }
+
+    .score.left{ justify-content:flex-start; gap:10px; box-shadow:var(--glowX); }
+    .score.center{ justify-content:center; gap:10px; }
+    .score.right{ justify-content:flex-end; gap:10px; box-shadow:var(--glowO); }
+
+    /* Board */
+    .boardWrap{ padding:12px 18px 10px; }
+
+    .board{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+      padding:14px;
+      background: rgba(17,26,46,.35);
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .cell{
+      aspect-ratio:1/1;
+      border:0;
+      border-radius:18px;
+      background: var(--btn);
+      color: var(--text);
+      font-size: clamp(42px, 8vw, 58px);
+      font-weight:900;
+      cursor:pointer;
+      transition: all .15s ease;
+      box-shadow: 0 10px 24px rgba(0,0,0,.35);
+    }
+
+    .cell:hover{ background:var(--btnHover); transform:translateY(-2px); }
+    .cell:active{ transform:translateY(1px) scale(.98); }
+    .cell[disabled]{ cursor:default; }
+
+    .cell.x{ color:var(--x); }
+    .cell.o{ color:var(--o); }
+
+    .cell.win{
+      outline:2px solid var(--win);
+      box-shadow:0 0 0 4px rgba(34,197,94,.2), 0 12px 26px rgba(0,0,0,.45);
+    }
+
+    footer{
+      display:flex;
+      gap:12px;
+      padding:14px 18px 18px;
+    }
+
+    .btn{
+      flex:1;
+      border:0;
+      border-radius:14px;
+      padding:11px;
+      background: rgba(17,26,46,.95);
+      color:var(--text);
+      font-weight:800;
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.08);
+      transition:.15s;
+    }
+
+    .btn:hover{ background:rgba(26,42,85,.95); transform:translateY(-1px); }
+    .btn:active{ transform:translateY(1px); }
+
+    .btn.danger{
+      background: rgba(42,20,48,.95);
+    }
+    .btn.danger:hover{
+      background: rgba(58,28,67,.95);
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header>
+      <h1>Tic Tac Toe</h1>
+      <div id="turnBadge" class="badge">Turn: X</div>
+    </header>
+
+    <!-- Scoreboard -->
+    <section class="scores">
+      <div class="score left">
+        <small>X</small>
+        <span class="val" id="sx">0</span>
+      </div>
+
+      <div class="score center">
+        <small>Draw</small>
+        <span class="val" id="sd">0</span>
+      </div>
+
+      <div class="score right">
+        <small>O</small>
+        <span class="val" id="so">0</span>
+      </div>
+    </section>
+
+    <section class="boardWrap">
+      <div class="board" id="board"></div>
+    </section>
+
+    <footer>
+      <button class="btn" id="resetRound">Reset Round</button>
+      <button class="btn danger" id="resetScore">Reset Score</button>
+      <button class="btn" id="installBtn" style="display:none;">Install App</button>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
