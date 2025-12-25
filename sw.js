@@ -1,5 +1,5 @@
-/** 
- const CACHE = "ttt-pwa-v1";
+
+const CACHE = "ttt-pwa-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -38,4 +38,3 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-**/
